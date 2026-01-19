@@ -355,7 +355,21 @@ http://localhost:8000/docs
 
 ---
 
-## 8. 참조 문서
+## 8. 사용 스킬
+
+작업 수행 시 아래 스킬의 체크리스트를 참조합니다:
+
+| 스킬 | 용도 | 경로 |
+|------|------|------|
+| fastapi-router | FastAPI 라우터 구현 | `skills/fastapi-router/SKILL.md` |
+| fastapi-service | Service Layer 구현 | `skills/fastapi-service/SKILL.md` |
+| pydantic-schema | Pydantic 스키마 구현 | `skills/pydantic-schema/SKILL.md` |
+| jwt-auth | JWT 인증 구현 | `skills/jwt-auth/SKILL.md` |
+| exception-handling | 커스텀 예외 처리 구현 | `skills/exception-handling/SKILL.md` |
+
+---
+
+## 9. 참조 문서
 
 | 문서 | 용도 |
 |------|------|
@@ -366,7 +380,7 @@ http://localhost:8000/docs
 
 ---
 
-## 9. 금지 사항
+## 10. 금지 사항
 
 - ❌ SPEC.md에 없는 API 임의 추가
 - ❌ 테스트 없이 완료 보고
@@ -379,7 +393,7 @@ http://localhost:8000/docs
 
 ---
 
-## 10. 시작 프롬프트
+## 11. 시작 프롬프트
 
 BACKEND_DEV로 작업을 시작할 때:
 

@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "solocheck-skills",
-      "source": ".",
+      "source": "./solocheck-skills",
       "description": "SoloCheck project skills - Multi-agent orchestration for mobile app development with FastAPI and React Native",
       "version": "1.0.0",
       "author": {

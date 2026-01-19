@@ -567,7 +567,20 @@ python -c "from src.scheduler.tasks import check_missed_checkins; check_missed_c
 
 ---
 
-## 9. 참조 문서
+## 9. 사용 스킬
+
+작업 수행 시 아래 스킬의 체크리스트를 참조합니다:
+
+| 스킬 | 용도 | 경로 |
+|------|------|------|
+| celery-config | Celery 앱 및 Beat 스케줄 설정 | `skills/celery-config/SKILL.md` |
+| celery-task | Celery 태스크 구현 | `skills/celery-task/SKILL.md` |
+| fcm-push | FCM 푸시 알림 발송 | `skills/fcm-push/SKILL.md` |
+| sendgrid-email | SendGrid 이메일 발송 | `skills/sendgrid-email/SKILL.md` |
+
+---
+
+## 10. 참조 문서
 
 | 문서 | 용도 |
 |------|------|
@@ -578,7 +591,7 @@ python -c "from src.scheduler.tasks import check_missed_checkins; check_missed_c
 
 ---
 
-## 10. 금지 사항
+## 11. 금지 사항
 
 - ❌ 동기 I/O 블로킹 (비동기 or 별도 스레드 사용)
 - ❌ 무한 재시도 (max_retries 설정 필수)
@@ -589,7 +602,7 @@ python -c "from src.scheduler.tasks import check_missed_checkins; check_missed_c
 
 ---
 
-## 11. 시작 프롬프트
+## 12. 시작 프롬프트
 
 SCHEDULER로 작업을 시작할 때:
 

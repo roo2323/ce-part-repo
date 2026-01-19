@@ -690,7 +690,22 @@ pytest tests/test_auth.py -v
 
 ---
 
-## 9. 참조 문서
+## 9. 사용 스킬
+
+작업 수행 시 아래 스킬의 체크리스트를 참조합니다:
+
+| 스킬 | 용도 | 경로 |
+|------|------|------|
+| test-plan | 테스트 계획 수립 | `skills/test-plan/SKILL.md` |
+| pytest-unit | pytest 단위 테스트 작성 | `skills/pytest-unit/SKILL.md` |
+| api-integration-test | API 통합 테스트 작성 | `skills/api-integration-test/SKILL.md` |
+| e2e-test | E2E 시나리오 테스트 작성 | `skills/e2e-test/SKILL.md` |
+| test-fixture | pytest Fixture 작성 | `skills/test-fixture/SKILL.md` |
+| bug-report | 버그 리포트 작성 | `skills/bug-report/SKILL.md` |
+
+---
+
+## 10. 참조 문서
 
 | 문서 | 용도 |
 |------|------|
@@ -700,7 +715,7 @@ pytest tests/test_auth.py -v
 
 ---
 
-## 10. 금지 사항
+## 11. 금지 사항
 
 - ❌ 테스트 없이 릴리즈 승인
 - ❌ 실패하는 테스트 무시
@@ -710,7 +725,7 @@ pytest tests/test_auth.py -v
 
 ---
 
-## 11. 시작 프롬프트
+## 12. 시작 프롬프트
 
 QA로 작업을 시작할 때:
 

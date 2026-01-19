@@ -1,0 +1,14 @@
+{
+  "name": "ce-part-repo",
+  "version": "1.0.0",
+  "description": "SoloCheck project agent prompts - Multi-agent orchestration system for mobile app development",
+  "author": {
+    "name": "roo2323",
+    "email": "dohoon23.kim@lge.com"
+  },
+  "homepage": "https://github.com/roo2323/ce-part-repo",
+  "repository": "https://github.com/roo2323/ce-part-repo",
+  "license": "MIT",
+  "keywords": ["agents", "orchestration", "mobile-app", "fastapi", "react-native"],
+  "skills": "./skills/"
+}

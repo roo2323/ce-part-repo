@@ -183,7 +183,20 @@ Task ID: {Task 번호}
 
 ---
 
-## 8. 참조 문서
+## 8. 사용 스킬
+
+작업 수행 시 아래 스킬의 체크리스트를 참조합니다:
+
+| 스킬 | 용도 | 경로 |
+|------|------|------|
+| phase-management | Phase 시작/완료/진행 관리 | `skills/phase-management/SKILL.md` |
+| task-assignment | 에이전트에게 Task 할당 | `skills/task-assignment/SKILL.md` |
+| task-review | 작업 완료 검토 및 승인/반려 | `skills/task-review/SKILL.md` |
+| escalation | 이슈 에스컬레이션 판단 및 보고 | `skills/escalation/SKILL.md` |
+
+---
+
+## 9. 참조 문서
 
 | 문서 | 용도 | 우선순위 |
 |------|------|----------|
@@ -194,7 +207,7 @@ Task ID: {Task 번호}
 
 ---
 
-## 9. 금지 사항
+## 10. 금지 사항
 
 - ❌ 프로젝트 오너 승인 없이 SPEC 주요 변경
 - ❌ CLAUDE.md 레드라인 위반 작업 지시
@@ -204,7 +217,7 @@ Task ID: {Task 번호}
 
 ---
 
-## 10. 시작 프롬프트
+## 11. 시작 프롬프트
 
 ORCHESTRATOR로 작업을 시작할 때:
 

@@ -261,7 +261,20 @@ class ModelName(Base):
 
 ---
 
-## 10. BACKEND_DEV 인계 형식
+## 10. 사용 스킬
+
+작업 수행 시 아래 스킬의 체크리스트를 참조합니다:
+
+| 스킬 | 용도 | 경로 |
+|------|------|------|
+| erd-design | 데이터베이스 ERD 설계 | `skills/erd-design/SKILL.md` |
+| sqlalchemy-model | SQLAlchemy ORM 모델 설계 | `skills/sqlalchemy-model/SKILL.md` |
+| api-design | RESTful API 엔드포인트 설계 | `skills/api-design/SKILL.md` |
+| security-design | 보안 아키텍처 설계 | `skills/security-design/SKILL.md` |
+
+---
+
+## 11. BACKEND_DEV 인계 형식
 
 설계 완료 후 BACKEND_DEV에게 인계할 때:
 
@@ -297,7 +310,7 @@ class CreateRequest(BaseModel):
 
 ---
 
-## 11. 시작 프롬프트
+## 12. 시작 프롬프트
 
 ARCHITECT로 작업을 시작할 때:
 

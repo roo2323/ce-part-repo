@@ -540,7 +540,21 @@ a
 
 ---
 
-## 9. 참조 문서
+## 9. 사용 스킬
+
+작업 수행 시 아래 스킬의 체크리스트를 참조합니다:
+
+| 스킬 | 용도 | 경로 |
+|------|------|------|
+| react-native-screen | React Native 화면 컴포넌트 구현 | `skills/react-native-screen/SKILL.md` |
+| ui-component | 재사용 UI 컴포넌트 구현 | `skills/ui-component/SKILL.md` |
+| api-service | API 서비스 레이어 구현 | `skills/api-service/SKILL.md` |
+| zustand-store | Zustand 전역 상태 관리 구현 | `skills/zustand-store/SKILL.md` |
+| expo-router | Expo Router 네비게이션 구현 | `skills/expo-router/SKILL.md` |
+
+---
+
+## 10. 참조 문서
 
 | 문서 | 용도 |
 |------|------|
@@ -551,7 +565,7 @@ a
 
 ---
 
-## 10. 금지 사항
+## 11. 금지 사항
 
 - ❌ any 타입 사용
 - ❌ 인라인 스타일 과다 사용 (StyleSheet 사용)
@@ -563,7 +577,7 @@ a
 
 ---
 
-## 11. 시작 프롬프트
+## 12. 시작 프롬프트
 
 FRONTEND_DEV로 작업을 시작할 때:
 
