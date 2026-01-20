@@ -1,0 +1,99 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: solocheck-db
+    environment:
+      POSTGRES_USER: solocheck
+      POSTGRES_PASSWORD: solocheck
+      POSTGRES_DB: solocheck
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U solocheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Celery
+  redis:
+    image: redis:7-alpine
+    container_name: solocheck-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solocheck-backend
+    environment:
+      DATABASE_URL: postgresql://solocheck:solocheck@db:5432/solocheck
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      FCM_CREDENTIALS_PATH: /app/firebase-credentials.json
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solocheck-celery-worker
+    environment:
+      DATABASE_URL: postgresql://solocheck:solocheck@db:5432/solocheck
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      FCM_CREDENTIALS_PATH: /app/firebase-credentials.json
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A src.scheduler.celery_app worker --loglevel=info
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solocheck-celery-beat
+    environment:
+      DATABASE_URL: postgresql://solocheck:solocheck@db:5432/solocheck
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A src.scheduler.celery_app beat --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:

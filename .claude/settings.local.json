@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(pip3 --version:*)",
+      "Bash(source .venv/bin/activate)",
+      "Bash(pip install:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(npm install --cache /tmp/npm-cache)",
+      "Bash(npx expo install:*)",
+      "Bash(node --version:*)",
+      "Bash(npm ls:*)",
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(npm view:*)",
+      "Bash(npx expo start --clear)",
+      "Bash(npx expo start:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker restart:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker compose:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
