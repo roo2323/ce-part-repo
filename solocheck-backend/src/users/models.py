@@ -14,10 +14,15 @@ from sqlalchemy.sql import func
 from src.database import Base
 
 if TYPE_CHECKING:
-    from src.checkin.models import CheckInLog
+    from src.checkin.models import CheckInLog, CheckInSessionToken
     from src.contacts.models import EmergencyContact
+    from src.location.models import LocationSharingLog
     from src.messages.models import PersonalMessage
     from src.notifications.models import NotificationLog
+    from src.pets.models import Pet
+    from src.settings.models import ReminderSettings
+    from src.sos.models import SOSEvent
+    from src.vault.models import InfoVault
 
 
 class User(Base):
@@ -76,6 +81,19 @@ class User(Base):
         nullable=False,
     )
 
+    # Location consent
+    location_consent = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="Whether user has consented to location sharing",
+    )
+    location_consent_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="Timestamp when location consent was given",
+    )
+
     # Timestamps
     created_at = Column(
         DateTime(timezone=True),
@@ -108,6 +126,37 @@ class User(Base):
     )
     notification_logs: list["NotificationLog"] = relationship(
         "NotificationLog",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    reminder_settings: "ReminderSettings | None" = relationship(
+        "ReminderSettings",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    checkin_session_tokens: list["CheckInSessionToken"] = relationship(
+        "CheckInSessionToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    sos_events: list["SOSEvent"] = relationship(
+        "SOSEvent",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    pets: list["Pet"] = relationship(
+        "Pet",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    vault_items: list["InfoVault"] = relationship(
+        "InfoVault",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    location_sharing_logs: list["LocationSharingLog"] = relationship(
+        "LocationSharingLog",
         back_populates="user",
         cascade="all, delete-orphan",
     )

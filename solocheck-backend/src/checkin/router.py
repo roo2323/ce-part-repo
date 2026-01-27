@@ -19,9 +19,12 @@ from src.checkin.schemas import (
     CheckInSettingsRequest,
     CheckInSettingsResponse,
     CheckInStatusResponse,
+    QuickCheckInRequest,
+    QuickCheckInResponse,
 )
 from src.checkin.service import (
     create_check_in,
+    create_quick_check_in_with_token,
     get_check_in_history,
     get_settings,
     get_status,
@@ -234,4 +237,46 @@ async def get_checkin_history(
             total=total,
             total_pages=total_pages,
         ),
+    )
+
+
+@router.post(
+    "/quick",
+    response_model=QuickCheckInResponse,
+    summary="Quick check-in via token",
+    description="Perform a quick check-in using a session token from push notification.",
+)
+async def quick_checkin(
+    request: QuickCheckInRequest,
+    db: Annotated[Session, Depends(get_db)],
+) -> QuickCheckInResponse:
+    """
+    Perform a quick check-in using a session token.
+
+    This endpoint is used when users tap check-in from push notifications.
+    It does not require authentication - the token serves as proof of identity.
+
+    Args:
+        request: Quick check-in request with session token.
+        db: Database session.
+
+    Returns:
+        QuickCheckInResponse: Check-in result with status.
+    """
+    result = create_quick_check_in_with_token(db, request.token)
+
+    if result is None:
+        return QuickCheckInResponse(
+            success=False,
+            message="유효하지 않거나 만료된 토큰입니다.",
+        )
+
+    check_in_log, next_check_in_due, user = result
+
+    return QuickCheckInResponse(
+        success=True,
+        id=check_in_log.id,
+        checked_at=check_in_log.checked_at,
+        next_check_in_due=next_check_in_due,
+        message="체크인이 완료되었습니다.",
     )

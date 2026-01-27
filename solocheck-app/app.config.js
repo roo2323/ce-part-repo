@@ -34,9 +34,9 @@ export default {
       typedRoutes: true,
     },
     extra: {
-      apiUrl: process.env.API_URL || 'http://10.20.210.215:8000/api/v1',
+      apiUrl: process.env.API_URL || 'http://10.20.211.171:8000/api/v1',
       eas: {
-        projectId: 'your-project-id',
+        projectId: '77b0b694-bb37-4ddf-999e-3e7b9f157ce0',
       },
     },
   },

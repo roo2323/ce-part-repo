@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useCheckinStore } from '@/stores/checkin.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useSOSStore } from '@/stores/sos.store';
 import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZES, LEGAL_NOTICE } from '@/constants';
+import SOSButton from '@/components/sos/SOSButton';
+import SOSCountdownModal from '@/components/sos/SOSCountdownModal';
 
 export default function HomeScreen() {
   const { user } = useAuthStore();
   const { status, checkIn, fetchStatus, isLoading, error } = useCheckinStore();
+  const { activeEvent, reset: resetSOS } = useSOSStore();
+  const [showSOSModal, setShowSOSModal] = useState(false);
 
   useEffect(() => {
     fetchStatus();
@@ -25,6 +30,15 @@ export default function HomeScreen() {
   const onRefresh = useCallback(() => {
     fetchStatus();
   }, []);
+
+  const handleSOSTriggered = useCallback(() => {
+    setShowSOSModal(true);
+  }, []);
+
+  const handleSOSModalDismiss = useCallback(() => {
+    setShowSOSModal(false);
+    resetSOS();
+  }, [resetSOS]);
 
   const handleCheckIn = async () => {
     try {
@@ -178,7 +192,18 @@ export default function HomeScreen() {
             <Text style={styles.settingValue}>{status?.gracePeriodHours ?? 24}시간</Text>
           </View>
         </View>
+
+        {/* SOS Button */}
+        <View style={styles.sosSection}>
+          <SOSButton onTriggered={handleSOSTriggered} />
+        </View>
       </ScrollView>
+
+      {/* SOS Countdown Modal */}
+      <SOSCountdownModal
+        visible={showSOSModal || activeEvent !== null}
+        onDismiss={handleSOSModalDismiss}
+      />
 
       {/* Footer with Legal Notice */}
       <View style={styles.footer}>
@@ -340,6 +365,11 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: COLORS.border,
     marginVertical: SPACING.xs,
+  },
+  sosSection: {
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.lg,
+    alignItems: 'center',
   },
   footer: {
     paddingVertical: SPACING.md,

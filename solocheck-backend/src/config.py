@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     # Message Encryption
     message_encryption_key: str = ""
 
+    # Vault Encryption Key (Fernet key, 32 bytes base64 encoded)
+    vault_encryption_key: str = ""
+
     @property
     def is_production(self) -> bool:
         """Check if running in production environment."""

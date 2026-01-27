@@ -2,14 +2,15 @@
 CheckIn service layer for business logic.
 
 This module provides service functions for check-in related operations
-including settings management and status calculations.
+including settings management, status calculations, and session token management.
 """
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from src.checkin.models import CheckInLog
+from src.checkin.models import CheckInLog, CheckInSessionToken
 from src.checkin.schemas import CheckInSettingsRequest, CheckInStatusResponse
 from src.users.models import User
 
@@ -284,3 +285,158 @@ def get_check_in_history(
     )
 
     return logs, total
+
+
+# Session Token Functions for Push Notification Check-in
+
+
+def generate_session_token(
+    db: Session,
+    user_id: str,
+    expires_hours: int = 1,
+) -> Optional[CheckInSessionToken]:
+    """
+    Generate a session token for quick check-in via push notification.
+
+    Args:
+        db: Database session.
+        user_id: The user's unique identifier.
+        expires_hours: Token validity period in hours (default 1 hour).
+
+    Returns:
+        CheckInSessionToken or None: The created token if user exists.
+    """
+    # Verify user exists
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        return None
+
+    # Generate secure token
+    token = secrets.token_urlsafe(48)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=expires_hours)
+
+    # Create session token
+    session_token = CheckInSessionToken(
+        user_id=user_id,
+        token=token,
+        expires_at=expires_at,
+    )
+    db.add(session_token)
+    db.commit()
+    db.refresh(session_token)
+
+    return session_token
+
+
+def verify_and_consume_session_token(
+    db: Session,
+    token: str,
+) -> Optional[User]:
+    """
+    Verify a session token and mark it as used.
+
+    Args:
+        db: Database session.
+        token: The session token to verify.
+
+    Returns:
+        User or None: The user if token is valid and unused.
+    """
+    now = datetime.now(timezone.utc)
+
+    # Find the token
+    session_token = (
+        db.query(CheckInSessionToken)
+        .filter(
+            CheckInSessionToken.token == token,
+            CheckInSessionToken.expires_at > now,
+            CheckInSessionToken.used_at.is_(None),
+        )
+        .first()
+    )
+
+    if session_token is None:
+        return None
+
+    # Mark as used
+    session_token.used_at = now
+    db.commit()
+
+    # Return the associated user
+    return session_token.user
+
+
+def create_quick_check_in(
+    db: Session,
+    user_id: str,
+    device_type: str = "push",
+) -> Optional[tuple[CheckInLog, datetime]]:
+    """
+    Perform a quick check-in (from push notification or widget).
+
+    Args:
+        db: Database session.
+        user_id: The user's unique identifier.
+        device_type: Source of check-in ('push', 'widget').
+
+    Returns:
+        tuple or None: (CheckInLog, next_check_in_due) if successful.
+    """
+    method = "push_response" if device_type == "push" else "widget"
+    return create_check_in(db, user_id, method=method)
+
+
+def create_quick_check_in_with_token(
+    db: Session,
+    token: str,
+) -> Optional[tuple[CheckInLog, datetime, User]]:
+    """
+    Perform a quick check-in using a session token.
+
+    Args:
+        db: Database session.
+        token: The session token.
+
+    Returns:
+        tuple or None: (CheckInLog, next_check_in_due, User) if successful.
+    """
+    # Verify and consume the token
+    user = verify_and_consume_session_token(db, token)
+    if user is None:
+        return None
+
+    # Perform check-in
+    result = create_check_in(db, user.id, method="push_response")
+    if result is None:
+        return None
+
+    check_in_log, next_check_in_due = result
+    return check_in_log, next_check_in_due, user
+
+
+def cleanup_expired_tokens(db: Session) -> int:
+    """
+    Clean up expired session tokens.
+
+    Args:
+        db: Database session.
+
+    Returns:
+        int: Number of tokens deleted.
+    """
+    now = datetime.now(timezone.utc)
+
+    # Delete expired or used tokens older than 24 hours
+    threshold = now - timedelta(hours=24)
+
+    deleted = (
+        db.query(CheckInSessionToken)
+        .filter(
+            (CheckInSessionToken.expires_at < now)
+            | (CheckInSessionToken.used_at < threshold)
+        )
+        .delete(synchronize_session=False)
+    )
+
+    db.commit()
+    return deleted

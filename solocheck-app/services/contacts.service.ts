@@ -16,7 +16,26 @@ interface BackendContactResponse {
   contact_value: string;
   priority: number;
   is_verified: boolean;
+  status: string;
+  consent_requested_at: string | null;
+  consent_responded_at: string | null;
+  consent_expires_at: string | null;
   created_at: string;
+}
+
+interface ConsentRequestResponse {
+  message: string;
+  contact_id: string;
+  status: string;
+  expires_at: string | null;
+}
+
+interface ConsentStatusResponse {
+  contact_id: string;
+  status: string;
+  requested_at: string | null;
+  responded_at: string | null;
+  expires_at: string | null;
 }
 
 interface BackendContactListResponse {
@@ -33,6 +52,10 @@ const transformContact = (contact: BackendContactResponse): EmergencyContact => 
   phone: contact.contact_type === 'sms' ? contact.contact_value : '',
   email: contact.contact_type === 'email' ? contact.contact_value : undefined,
   isVerified: contact.is_verified,
+  status: (contact.status || 'pending') as EmergencyContact['status'],
+  consentRequestedAt: contact.consent_requested_at || undefined,
+  consentRespondedAt: contact.consent_responded_at || undefined,
+  consentExpiresAt: contact.consent_expires_at || undefined,
   createdAt: contact.created_at,
   updatedAt: contact.created_at,
 });
@@ -115,6 +138,30 @@ export const contactsService = {
   async sendTestNotification(id: string): Promise<void> {
     try {
       await api.post(`/contacts/${id}/test-notification`);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  /**
+   * Request consent from an emergency contact
+   */
+  async requestConsent(id: string): Promise<ConsentRequestResponse> {
+    try {
+      const response = await api.post<ConsentRequestResponse>(`/contacts/${id}/request-consent`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  /**
+   * Get consent status for a contact
+   */
+  async getConsentStatus(id: string): Promise<ConsentStatusResponse> {
+    try {
+      const response = await api.get<ConsentStatusResponse>(`/contacts/${id}/consent-status`);
+      return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }

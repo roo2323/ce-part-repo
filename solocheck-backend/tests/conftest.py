@@ -1,17 +1,92 @@
 """
 Pytest configuration and fixtures for SoloCheck backend tests.
 """
+import json
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.types import JSON, Text, TypeDecorator
 
 from src.common.security import create_access_token, get_password_hash
 from src.database import Base, get_db
 from src.main import app
 from src.users.models import User
 
+
+# Monkey-patch ARRAY type for SQLite compatibility
+# This allows the models to use ARRAY while testing with SQLite
+from sqlalchemy.dialects import sqlite
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
+
+
+class SQLiteCompatibleArray(TypeDecorator):
+    """A TypeDecorator that stores PostgreSQL ARRAY as JSON in SQLite."""
+
+    impl = Text
+    cache_ok = True
+
+    def __init__(self, item_type=None):
+        super().__init__()
+        self.item_type = item_type
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(PG_ARRAY(self.item_type))
+        return dialect.type_descriptor(Text())
+
+    def process_bind_param(self, value, dialect):
+        if dialect.name != "postgresql" and value is not None:
+            return json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if dialect.name != "postgresql" and value is not None:
+            if isinstance(value, str):
+                return json.loads(value)
+        return value
+
+
+# Patch the ARRAY class methods for SQLite
+original_array_bind_processor = PG_ARRAY.bind_processor.__get__(PG_ARRAY, type)
+
+
+def patched_bind_processor(self, dialect):
+    """Override bind_processor to handle SQLite."""
+    if dialect.name != "postgresql":
+        def process(value):
+            if value is not None:
+                return json.dumps(value)
+            return value
+        return process
+    return original_array_bind_processor(self, dialect)
+
+
+def patched_result_processor(self, dialect, coltype):
+    """Override result_processor to handle SQLite."""
+    if dialect.name != "postgresql":
+        def process(value):
+            if value is not None and isinstance(value, str):
+                return json.loads(value)
+            return value
+        return process
+    # For PostgreSQL, use default behavior
+    return None
+
+
+# Apply patches
+PG_ARRAY.bind_processor = patched_bind_processor
+PG_ARRAY.result_processor = patched_result_processor
+
+
+def visit_ARRAY_as_TEXT(self, type_, **kw):
+    """Render ARRAY as TEXT for SQLite."""
+    return "TEXT"
+
+
+sqlite.base.SQLiteTypeCompiler.visit_ARRAY = visit_ARRAY_as_TEXT
 
 # Test database URL (in-memory SQLite for testing)
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

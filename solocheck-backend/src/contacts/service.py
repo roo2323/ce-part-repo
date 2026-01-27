@@ -2,18 +2,29 @@
 Contact service layer for business logic.
 
 This module provides service functions for emergency contact operations
-including CRUD operations, verification, and business rule enforcement.
+including CRUD operations, verification, consent management, and business rule enforcement.
 """
 import re
+import secrets
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from src.contacts.models import EmergencyContact
+from src.contacts.models import (
+    EmergencyContact,
+    CONSENT_STATUS_PENDING,
+    CONSENT_STATUS_APPROVED,
+    CONSENT_STATUS_REJECTED,
+    CONSENT_STATUS_EXPIRED,
+)
 from src.contacts.schemas import ContactCreateRequest, ContactType, ContactUpdateRequest
 
 # Maximum number of emergency contacts per user
 MAX_CONTACTS = 3
+
+# Consent token validity period (7 days)
+CONSENT_TOKEN_VALIDITY_DAYS = 7
 
 
 def validate_email(email: str) -> bool:
@@ -299,3 +310,187 @@ def reorder_priorities(db: Session, user_id: str) -> None:
         if contact.priority != idx:
             contact.priority = idx
     db.commit()
+
+
+# Consent Management Functions
+
+
+def request_consent(
+    db: Session,
+    user_id: str,
+    contact_id: str,
+) -> Optional[EmergencyContact]:
+    """
+    Generate consent request for a contact.
+
+    Creates a consent token and sets the expiration time.
+
+    Args:
+        db: Database session.
+        user_id: The user's unique identifier.
+        contact_id: The contact's unique identifier.
+
+    Returns:
+        EmergencyContact or None: The updated contact if found.
+    """
+    contact = get_contact_by_id(db, user_id, contact_id)
+    if contact is None:
+        return None
+
+    # Generate consent token
+    contact.consent_token = secrets.token_urlsafe(48)
+    contact.consent_requested_at = datetime.now(timezone.utc)
+    contact.consent_expires_at = datetime.now(timezone.utc) + timedelta(
+        days=CONSENT_TOKEN_VALIDITY_DAYS
+    )
+    contact.status = CONSENT_STATUS_PENDING
+    contact.consent_responded_at = None
+
+    db.commit()
+    db.refresh(contact)
+    return contact
+
+
+def get_contact_by_consent_token(
+    db: Session,
+    token: str,
+) -> Optional[EmergencyContact]:
+    """
+    Get a contact by consent token.
+
+    Args:
+        db: Database session.
+        token: The consent token.
+
+    Returns:
+        EmergencyContact or None: The contact if found and token is valid.
+    """
+    now = datetime.now(timezone.utc)
+    contact = (
+        db.query(EmergencyContact)
+        .filter(
+            EmergencyContact.consent_token == token,
+            EmergencyContact.consent_expires_at > now,
+        )
+        .first()
+    )
+    return contact
+
+
+def process_consent(
+    db: Session,
+    token: str,
+    approved: bool,
+) -> Optional[EmergencyContact]:
+    """
+    Process consent response (approve or reject).
+
+    Args:
+        db: Database session.
+        token: The consent token.
+        approved: Whether the contact approves.
+
+    Returns:
+        EmergencyContact or None: The updated contact if found and processed.
+    """
+    contact = get_contact_by_consent_token(db, token)
+    if contact is None:
+        return None
+
+    now = datetime.now(timezone.utc)
+    contact.status = CONSENT_STATUS_APPROVED if approved else CONSENT_STATUS_REJECTED
+    contact.consent_responded_at = now
+    contact.consent_token = None  # Invalidate the token after use
+
+    # If approved, also mark as verified
+    if approved:
+        contact.is_verified = True
+
+    db.commit()
+    db.refresh(contact)
+    return contact
+
+
+def get_consent_status(
+    db: Session,
+    user_id: str,
+    contact_id: str,
+) -> Optional[dict]:
+    """
+    Get consent status for a contact.
+
+    Args:
+        db: Database session.
+        user_id: The user's unique identifier.
+        contact_id: The contact's unique identifier.
+
+    Returns:
+        dict or None: Consent status information if contact found.
+    """
+    contact = get_contact_by_id(db, user_id, contact_id)
+    if contact is None:
+        return None
+
+    # Check if consent has expired
+    if (
+        contact.status == CONSENT_STATUS_PENDING
+        and contact.consent_expires_at
+        and contact.consent_expires_at < datetime.now(timezone.utc)
+    ):
+        contact.status = CONSENT_STATUS_EXPIRED
+        db.commit()
+        db.refresh(contact)
+
+    return {
+        "contact_id": contact.id,
+        "status": contact.status,
+        "requested_at": contact.consent_requested_at,
+        "responded_at": contact.consent_responded_at,
+        "expires_at": contact.consent_expires_at,
+    }
+
+
+def get_active_contacts(db: Session, user_id: str) -> list[EmergencyContact]:
+    """
+    Get only approved (consented) emergency contacts for a user.
+
+    Args:
+        db: Database session.
+        user_id: The user's unique identifier.
+
+    Returns:
+        list[EmergencyContact]: List of approved contacts ordered by priority.
+    """
+    return (
+        db.query(EmergencyContact)
+        .filter(
+            EmergencyContact.user_id == user_id,
+            EmergencyContact.status == CONSENT_STATUS_APPROVED,
+            EmergencyContact.is_verified == True,  # noqa: E712
+        )
+        .order_by(EmergencyContact.priority)
+        .all()
+    )
+
+
+def check_expired_consents(db: Session) -> int:
+    """
+    Check and update expired consent requests.
+
+    Args:
+        db: Database session.
+
+    Returns:
+        int: Number of consents marked as expired.
+    """
+    now = datetime.now(timezone.utc)
+    updated = (
+        db.query(EmergencyContact)
+        .filter(
+            EmergencyContact.status == CONSENT_STATUS_PENDING,
+            EmergencyContact.consent_expires_at < now,
+        )
+        .update({"status": CONSENT_STATUS_EXPIRED}, synchronize_session=False)
+    )
+    db.commit()
+    return updated

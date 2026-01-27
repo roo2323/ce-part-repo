@@ -15,6 +15,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { contactsService } from '@/services/contacts.service';
+import ConsentBadge from '@/components/contacts/ConsentBadge';
 import type { EmergencyContact } from '@/types';
 
 const MAX_CONTACTS = 3;
@@ -135,6 +136,28 @@ export default function ContactsScreen() {
     );
   };
 
+  const handleRequestConsent = async (contact: EmergencyContact) => {
+    Alert.alert(
+      '동의 요청',
+      `${contact.name}님에게 비상연락처 동의 요청을 보내시겠습니까?\n\n동의 요청은 이메일로 발송되며, 7일간 유효합니다.`,
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '요청 보내기',
+          onPress: async () => {
+            try {
+              const result = await contactsService.requestConsent(contact.id);
+              Alert.alert('완료', result.message);
+              fetchContacts();
+            } catch (error) {
+              Alert.alert('오류', '동의 요청 발송에 실패했습니다.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderContact = ({ item }: { item: EmergencyContact }) => (
     <View style={styles.contactCard}>
       <View style={styles.contactInfo}>
@@ -144,30 +167,23 @@ export default function ContactsScreen() {
         <View style={styles.contactDetails}>
           <View style={styles.contactNameRow}>
             <Text style={styles.contactName}>{item.name}</Text>
-            <View style={[
-              styles.verifiedBadge,
-              item.isVerified ? styles.verifiedBadgeActive : styles.verifiedBadgePending
-            ]}>
-              <Ionicons
-                name={item.isVerified ? "checkmark-circle" : "time-outline"}
-                size={12}
-                color={item.isVerified ? "#34c759" : "#ff9500"}
-              />
-              <Text style={[
-                styles.verifiedBadgeText,
-                item.isVerified ? styles.verifiedText : styles.pendingText
-              ]}>
-                {item.isVerified ? "인증됨" : "대기중"}
-              </Text>
-            </View>
+            <ConsentBadge status={item.status} />
           </View>
-          <Text style={styles.contactPhone}>{item.phone}</Text>
+          <Text style={styles.contactPhone}>{item.phone || item.email}</Text>
           {item.relationship && (
             <Text style={styles.contactRelationship}>{item.relationship}</Text>
           )}
         </View>
       </View>
       <View style={styles.contactActions}>
+        {(item.status === 'pending' || item.status === 'expired' || item.status === 'rejected') && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.consentButton]}
+            onPress={() => handleRequestConsent(item)}
+          >
+            <Ionicons name="paper-plane-outline" size={18} color="#007AFF" />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => openEditModal(item)}
@@ -434,6 +450,10 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 8,
     marginLeft: 8,
+  },
+  consentButton: {
+    backgroundColor: '#e8f4ff',
+    borderRadius: 8,
   },
   emptyContainer: {
     flex: 1,

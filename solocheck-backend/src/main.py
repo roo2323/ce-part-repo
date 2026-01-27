@@ -10,15 +10,25 @@ from src.auth.router import router as auth_router
 from src.checkin.router import router as checkin_router
 from src.config import settings
 from src.contacts.router import router as contacts_router
+from src.location.router import router as location_router
 from src.messages.router import router as messages_router
+from src.pets.router import router as pets_router
+from src.settings.router import router as settings_router
+from src.sos.router import router as sos_router
 from src.users.router import router as users_router
+from src.vault.router import router as vault_router
 
 # Import all models to ensure SQLAlchemy relationships are properly resolved
 from src.users.models import User  # noqa: F401
-from src.checkin.models import CheckInLog  # noqa: F401
+from src.checkin.models import CheckInLog, CheckInSessionToken  # noqa: F401
 from src.contacts.models import EmergencyContact  # noqa: F401
+from src.location.models import LocationSharingLog  # noqa: F401
 from src.messages.models import PersonalMessage  # noqa: F401
 from src.notifications.models import NotificationLog  # noqa: F401
+from src.pets.models import Pet  # noqa: F401
+from src.settings.models import ReminderSettings  # noqa: F401
+from src.sos.models import SOSEvent  # noqa: F401
+from src.vault.models import InfoVault  # noqa: F401
 
 # Create FastAPI application
 app = FastAPI(
@@ -81,4 +91,9 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(users_router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(checkin_router, prefix="/api/v1/checkin", tags=["Check-in"])
 app.include_router(contacts_router, prefix="/api/v1/contacts", tags=["Contacts"])
+app.include_router(location_router, prefix="/api/v1/location", tags=["Location"])
 app.include_router(messages_router, prefix="/api/v1/message", tags=["Messages"])
+app.include_router(pets_router, prefix="/api/v1/pets", tags=["Pets"])
+app.include_router(settings_router, prefix="/api/v1/settings", tags=["Settings"])
+app.include_router(sos_router, prefix="/api/v1/sos", tags=["SOS"])
+app.include_router(vault_router, prefix="/api/v1/vault", tags=["Vault"])

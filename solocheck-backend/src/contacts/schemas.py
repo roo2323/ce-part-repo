@@ -71,6 +71,15 @@ class ContactUpdateRequest(BaseModel):
     )
 
 
+class ConsentStatus(str, Enum):
+    """Contact consent status."""
+
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+
+
 class ContactResponse(BaseModel):
     """Response schema for a single emergency contact."""
 
@@ -80,6 +89,10 @@ class ContactResponse(BaseModel):
     contact_value: str = Field(..., description="Contact value (email or phone)")
     priority: int = Field(..., description="Contact priority (1-3)")
     is_verified: bool = Field(..., description="Whether contact is verified")
+    status: str = Field(default="pending", description="Consent status")
+    consent_requested_at: Optional[datetime] = Field(None, description="When consent was requested")
+    consent_responded_at: Optional[datetime] = Field(None, description="When contact responded")
+    consent_expires_at: Optional[datetime] = Field(None, description="When consent request expires")
     created_at: datetime = Field(..., description="Creation timestamp")
 
     model_config = {"from_attributes": True}
@@ -108,3 +121,28 @@ class VerificationResponse(BaseModel):
     message: str = Field(..., description="Status message")
     contact_id: str = Field(..., description="Contact ID")
     sent_to: str = Field(..., description="Verification sent to")
+
+
+class ConsentRequestResponse(BaseModel):
+    """Response schema for consent request."""
+
+    message: str = Field(..., description="Status message")
+    contact_id: str = Field(..., description="Contact ID")
+    status: str = Field(..., description="Consent status")
+    expires_at: Optional[datetime] = Field(None, description="Consent request expiration")
+
+
+class ConsentStatusResponse(BaseModel):
+    """Response schema for consent status check."""
+
+    contact_id: str = Field(..., description="Contact ID")
+    status: str = Field(..., description="Consent status")
+    requested_at: Optional[datetime] = Field(None, description="When consent was requested")
+    responded_at: Optional[datetime] = Field(None, description="When contact responded")
+    expires_at: Optional[datetime] = Field(None, description="When consent request expires")
+
+
+class ConsentProcessRequest(BaseModel):
+    """Request schema for processing consent (approve/reject)."""
+
+    approved: bool = Field(..., description="Whether the contact approves")

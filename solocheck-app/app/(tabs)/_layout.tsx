@@ -51,6 +51,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="pets"
+        options={{
+          title: '반려동물',
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+            <Ionicons name="paw-outline" size={size} color={color} />
+          ),
+          headerTitle: '반려동물 정보',
+        }}
+      />
+      <Tabs.Screen
         name="message"
         options={{
           title: '메시지',

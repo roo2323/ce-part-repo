@@ -89,6 +89,14 @@ export default function SettingsScreen() {
           value: reminderEnabled,
           onToggle: setReminderEnabled,
         },
+        {
+          id: 'reminder-settings',
+          title: '리마인더 설정',
+          subtitle: '알림 시간, 방해금지 시간 등을 설정합니다',
+          icon: 'options-outline',
+          type: 'link',
+          onPress: () => router.push('/settings/reminder'),
+        },
       ],
     },
     {
@@ -109,6 +117,27 @@ export default function SettingsScreen() {
           icon: 'hourglass-outline',
           type: 'link',
           onPress: () => Alert.alert('알림', '유예 기간 설정은 준비 중입니다.'),
+        },
+      ],
+    },
+    {
+      title: '비상 정보',
+      items: [
+        {
+          id: 'info-vault',
+          title: '정보 금고',
+          subtitle: '의료, 주거, 보험 등 중요 정보 관리',
+          icon: 'lock-closed-outline',
+          type: 'link',
+          onPress: () => router.push('/settings/vault'),
+        },
+        {
+          id: 'location-sharing',
+          title: '위치정보 공유',
+          subtitle: '비상 알림 시 위치 전송 설정',
+          icon: 'location-outline',
+          type: 'link',
+          onPress: () => router.push('/settings/location'),
         },
       ],
     },

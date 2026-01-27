@@ -156,3 +156,44 @@ class CheckInHistoryResponse(BaseModel):
 
     data: list[CheckInLogResponse]
     meta: CheckInHistoryMeta
+
+
+class QuickCheckInRequest(BaseModel):
+    """
+    Request schema for quick check-in via push notification or widget.
+
+    Attributes:
+        token: Session token from push notification.
+        device_type: Source of check-in ('push', 'widget').
+    """
+
+    token: str = Field(
+        ...,
+        min_length=1,
+        description="Session token from push notification",
+    )
+    device_type: str = Field(
+        default="push",
+        description="Source of check-in: 'push' or 'widget'",
+    )
+
+
+class QuickCheckInResponse(BaseModel):
+    """
+    Response schema for quick check-in.
+
+    Attributes:
+        success: Whether the check-in was successful.
+        id: Check-in log entry identifier.
+        checked_at: Timestamp of the check-in.
+        next_check_in_due: Next expected check-in deadline.
+        message: Status message.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    success: bool
+    id: Optional[str] = None
+    checked_at: Optional[datetime] = None
+    next_check_in_due: Optional[datetime] = None
+    message: str

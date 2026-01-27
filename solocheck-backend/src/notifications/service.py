@@ -370,3 +370,179 @@ def send_contact_registration_notification(
         subject=email_data["subject"],
         html_content=email_data["html"],
     )
+
+
+def send_checkin_reminder_with_token(
+    user: User,
+    days_remaining: int,
+    token: str,
+    custom_message: Optional[str] = None,
+) -> bool:
+    """
+    Send a check-in reminder push notification with quick check-in token.
+
+    Args:
+        user: The user to remind.
+        days_remaining: Days until check-in deadline.
+        token: Session token for quick check-in.
+        custom_message: Optional custom reminder message.
+
+    Returns:
+        bool: True if notification was sent successfully.
+    """
+    if not user.fcm_token:
+        logger.info(f"User {user.id} has no FCM token, skipping reminder")
+        return False
+
+    push_data = get_reminder_push(days_remaining)
+
+    # Use custom message if provided
+    body = custom_message if custom_message else push_data["body"]
+
+    # Deep link URL for quick check-in
+    deep_link = f"solocheck://checkin?auto=true&token={token}"
+
+    return send_push_notification(
+        fcm_token=user.fcm_token,
+        title=push_data["title"],
+        body=body,
+        data={
+            "type": "checkin_reminder",
+            "days_remaining": str(days_remaining),
+            "token": token,
+            "deep_link": deep_link,
+            "action": "quick_checkin",
+        },
+    )
+
+
+def send_sos_alert_email(
+    db: Session,
+    user: User,
+    contact: "EmergencyContact",
+    location_url: Optional[str] = None,
+) -> bool:
+    """
+    Send an SOS emergency alert email to a contact.
+
+    Args:
+        db: Database session.
+        user: The user who triggered SOS.
+        contact: The emergency contact to notify.
+        location_url: Optional Google Maps URL with user's location.
+
+    Returns:
+        bool: True if notification was sent successfully.
+    """
+    if contact.contact_type != "email":
+        logger.info(f"Contact {contact.id} is not email type, skipping SOS alert")
+        return False
+
+    nickname = user.nickname or "사용자"
+    contact_name = contact.name
+
+    # Build location section
+    location_section = ""
+    if location_url:
+        location_section = f"""
+        <p style="margin-top: 20px;">
+            <strong>마지막 위치:</strong><br/>
+            <a href="{location_url}" style="color: #007AFF;">지도에서 보기</a>
+        </p>
+        """
+
+    html_content = f"""
+    <html>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #ff3b30; color: white; padding: 20px; border-radius: 12px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">SOS 긴급 알림</h1>
+        </div>
+
+        <div style="padding: 20px;">
+            <p style="font-size: 16px;">{contact_name}님께,</p>
+
+            <p style="font-size: 16px; line-height: 1.6;">
+                <strong>{nickname}</strong>님이 SoloCheck 앱에서 <strong style="color: #ff3b30;">SOS 긴급 알림</strong>을 발송했습니다.
+            </p>
+
+            <p style="font-size: 16px; line-height: 1.6;">
+                가능한 빨리 {nickname}님에게 연락을 시도해 주세요.
+            </p>
+
+            {location_section}
+
+            <div style="margin-top: 30px; padding: 16px; background-color: #fff3cd; border-radius: 8px;">
+                <p style="margin: 0; font-size: 14px; color: #856404;">
+                    <strong>주의:</strong> 이 알림은 의료적 판단이 아닌 긴급 연락 요청입니다.<br/>
+                    긴급 상황이 의심되면 119에 연락해 주세요.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px;">
+            <p>SoloCheck - 1인 가구 안부 확인 서비스</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    success = send_email(
+        to_email=contact.contact_value,
+        subject=f"[SOS 긴급] {nickname}님의 긴급 알림",
+        html_content=html_content,
+    )
+
+    # Log the notification
+    log_notification(
+        db=db,
+        user_id=user.id,
+        contact_id=contact.id,
+        notification_type="sos_alert",
+        status="sent" if success else "failed",
+        error_message=None if success else "Failed to send SOS alert email",
+    )
+
+    return success
+
+
+def send_urgent_reminder_with_token(
+    user: User,
+    token: str,
+    custom_message: Optional[str] = None,
+) -> bool:
+    """
+    Send an urgent check-in reminder push notification with quick check-in token.
+
+    This is sent when the user is in the grace period.
+
+    Args:
+        user: The user to remind urgently.
+        token: Session token for quick check-in.
+        custom_message: Optional custom reminder message.
+
+    Returns:
+        bool: True if notification was sent successfully.
+    """
+    if not user.fcm_token:
+        logger.info(f"User {user.id} has no FCM token, skipping urgent reminder")
+        return False
+
+    push_data = get_urgent_reminder_push()
+
+    # Use custom message if provided (but keep urgent title)
+    body = custom_message if custom_message else push_data["body"]
+
+    # Deep link URL for quick check-in
+    deep_link = f"solocheck://checkin?auto=true&token={token}"
+
+    return send_push_notification(
+        fcm_token=user.fcm_token,
+        title=push_data["title"],
+        body=body,
+        data={
+            "type": "urgent_reminder",
+            "token": token,
+            "deep_link": deep_link,
+            "action": "quick_checkin",
+        },
+    )

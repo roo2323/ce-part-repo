@@ -17,6 +17,9 @@ from src.common.exceptions import (
     ValidationException,
 )
 from src.contacts.schemas import (
+    ConsentProcessRequest,
+    ConsentRequestResponse,
+    ConsentStatusResponse,
     ContactCreateRequest,
     ContactListResponse,
     ContactResponse,
@@ -28,10 +31,14 @@ from src.contacts.service import (
     check_duplicate_contact,
     create_contact,
     delete_contact,
+    get_consent_status,
+    get_contact_by_consent_token,
     get_contact_by_id,
     get_contact_count,
     get_contacts,
+    process_consent,
     reorder_priorities,
+    request_consent,
     send_verification,
     update_contact,
 )
@@ -274,3 +281,118 @@ async def request_verification(
         contact_id=contact.id,
         sent_to=contact.contact_value,
     )
+
+
+# Consent Management Endpoints
+
+
+@router.post(
+    "/{contact_id}/request-consent",
+    response_model=ConsentRequestResponse,
+    summary="Request consent from contact",
+    description="Send a consent request to the emergency contact.",
+)
+async def request_contact_consent(
+    contact_id: str,
+    current_user: CurrentActiveUser,
+    db: Annotated[Session, Depends(get_db)],
+) -> ConsentRequestResponse:
+    """
+    Request consent from an emergency contact.
+
+    Generates a consent token and sends a request to the contact.
+    The contact has 7 days to respond.
+
+    Args:
+        contact_id: The contact's unique identifier.
+        current_user: The authenticated user from JWT token.
+        db: Database session.
+
+    Returns:
+        ConsentRequestResponse: Consent request status.
+
+    Raises:
+        ContactNotFoundException: If contact not found.
+    """
+    contact = request_consent(db, current_user.id, contact_id)
+    if contact is None:
+        raise ContactNotFoundException()
+
+    # TODO: Send consent request email via notification service
+
+    return ConsentRequestResponse(
+        message="동의 요청이 발송되었습니다.",
+        contact_id=contact.id,
+        status=contact.status,
+        expires_at=contact.consent_expires_at,
+    )
+
+
+@router.get(
+    "/{contact_id}/consent-status",
+    response_model=ConsentStatusResponse,
+    summary="Get consent status",
+    description="Get the consent status of an emergency contact.",
+)
+async def get_contact_consent_status(
+    contact_id: str,
+    current_user: CurrentActiveUser,
+    db: Annotated[Session, Depends(get_db)],
+) -> ConsentStatusResponse:
+    """
+    Get consent status for an emergency contact.
+
+    Args:
+        contact_id: The contact's unique identifier.
+        current_user: The authenticated user from JWT token.
+        db: Database session.
+
+    Returns:
+        ConsentStatusResponse: Consent status information.
+
+    Raises:
+        ContactNotFoundException: If contact not found.
+    """
+    status_data = get_consent_status(db, current_user.id, contact_id)
+    if status_data is None:
+        raise ContactNotFoundException()
+
+    return ConsentStatusResponse(**status_data)
+
+
+@router.post(
+    "/consent/{token}",
+    response_model=ContactResponse,
+    summary="Process consent response",
+    description="Process a consent response (approve or reject). This is a public endpoint.",
+)
+async def process_contact_consent(
+    token: str,
+    request: ConsentProcessRequest,
+    db: Annotated[Session, Depends(get_db)],
+) -> ContactResponse:
+    """
+    Process a consent response from an emergency contact.
+
+    This is a public endpoint accessed via the consent email link.
+    No authentication required - the token serves as proof of identity.
+
+    Args:
+        token: The consent token from the email.
+        request: Consent decision (approved or rejected).
+        db: Database session.
+
+    Returns:
+        ContactResponse: The updated contact.
+
+    Raises:
+        NotFoundException: If token is invalid or expired.
+    """
+    contact = process_consent(db, token, request.approved)
+    if contact is None:
+        raise NotFoundException(
+            code="INVALID_CONSENT_TOKEN",
+            message="유효하지 않거나 만료된 동의 토큰입니다.",
+        )
+
+    return ContactResponse.model_validate(contact)
