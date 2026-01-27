@@ -9,6 +9,33 @@ import type {
   ForgotPasswordRequest,
 } from '@/types/api';
 
+// Backend response type (matches backend's UserResponse)
+interface BackendUserResponse {
+  id: string;
+  email: string;
+  nickname?: string | null;
+  check_in_cycle: number;
+  grace_period: number;
+  last_check_in?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+// Map backend response to frontend User type
+function mapBackendUserToUser(backendUser: BackendUserResponse): User {
+  return {
+    id: backendUser.id,
+    email: backendUser.email,
+    name: backendUser.nickname || '',
+    phone: '',
+    createdAt: backendUser.created_at,
+    updatedAt: backendUser.updated_at || backendUser.created_at,
+    checkInIntervalHours: backendUser.check_in_cycle * 24, // days to hours
+    gracePeriodHours: backendUser.grace_period,
+  };
+}
+
 export const authService = {
   /**
    * Register a new user
@@ -102,8 +129,8 @@ export const authService = {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await api.get<User>('/users/me');
-      return response.data;
+      const response = await api.get<BackendUserResponse>('/users/me');
+      return mapBackendUserToUser(response.data);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -128,10 +155,10 @@ export const authService = {
   /**
    * Update user profile
    */
-  async updateProfile(data: Partial<User>): Promise<User> {
+  async updateProfile(data: { nickname?: string }): Promise<User> {
     try {
-      const response = await api.patch<User>('/users/me', data);
-      return response.data;
+      const response = await api.put<BackendUserResponse>('/users/me', data);
+      return mapBackendUserToUser(response.data);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -143,8 +170,8 @@ export const authService = {
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     try {
       await api.post('/auth/change-password', {
-        currentPassword,
-        newPassword,
+        current_password: currentPassword,
+        new_password: newPassword,
       });
     } catch (error) {
       throw new Error(getErrorMessage(error));

@@ -65,7 +65,6 @@ export default function PasswordScreen() {
     <>
       <Stack.Screen
         options={{
-          title: '비밀번호 변경',
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8 }}>
               <Ionicons name="close" size={24} color="#333" />

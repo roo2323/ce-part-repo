@@ -22,7 +22,7 @@ const LONG_PRESS_DURATION = 3000; // 3 seconds to trigger
 export default function SOSButton({ onTriggered }: SOSButtonProps) {
   const [isPressing, setIsPressing] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { trigger, isTriggering } = useSOSStore();
 
   const handlePressIn = useCallback(() => {

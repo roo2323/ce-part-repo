@@ -41,9 +41,9 @@ export default function CheckinSettingsScreen() {
 
   const loadSettings = async () => {
     try {
-      const settings = await reminderService.getReminderSettings();
-      // hours_before를 기반으로 interval 추정
-      const hours = settings.hours_before || 24;
+      const settings = await reminderService.getSettings();
+      // reminderHoursBefore 배열의 첫 번째 값을 기반으로 interval 추정
+      const hours = settings.reminderHoursBefore?.[0] || 24;
       if (hours <= 12) setSelectedInterval('12h');
       else if (hours <= 24) setSelectedInterval('1d');
       else if (hours <= 72) setSelectedInterval('3d');
@@ -59,8 +59,8 @@ export default function CheckinSettingsScreen() {
     setIsLoading(true);
     try {
       const option = INTERVAL_OPTIONS.find(o => o.value === selectedInterval);
-      await reminderService.updateReminderSettings({
-        hours_before: option?.hours || 24,
+      await reminderService.updateSettings({
+        reminder_hours_before: [option?.hours || 24],
       });
       Alert.alert('저장 완료', '체크인 주기가 변경되었습니다.', [
         { text: '확인', onPress: () => router.back() },
@@ -75,7 +75,7 @@ export default function CheckinSettingsScreen() {
   if (initialLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Stack.Screen options={{ title: '체크인 주기' }} />
+        <Stack.Screen options={{}} />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>로딩 중...</Text>
         </View>
@@ -87,7 +87,6 @@ export default function CheckinSettingsScreen() {
     <>
       <Stack.Screen
         options={{
-          title: '체크인 주기',
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8 }}>
               <Ionicons name="close" size={24} color="#333" />

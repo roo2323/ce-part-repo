@@ -32,14 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="settings/reminder"
-          options={{
-            headerShown: true,
-            headerTitle: '리마인더 설정',
-            headerBackTitle: '설정',
-          }}
-        />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );

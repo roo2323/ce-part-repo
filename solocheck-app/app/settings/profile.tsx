@@ -17,21 +17,21 @@ import { authService } from '@/services/auth.service';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, setUser } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
 
-  const [name, setName] = useState(user?.name || '');
+  const [nickname, setNickname] = useState(user?.name || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
-    if (!name.trim()) {
+    if (!nickname.trim()) {
       Alert.alert('입력 오류', '이름을 입력해주세요.');
       return;
     }
 
     setIsLoading(true);
     try {
-      const updatedUser = await authService.updateProfile({ name: name.trim() });
-      setUser(updatedUser);
+      const updatedUser = await authService.updateProfile({ nickname: nickname.trim() });
+      updateUser(updatedUser);
       Alert.alert('저장 완료', '프로필이 수정되었습니다.', [
         { text: '확인', onPress: () => router.back() },
       ]);
@@ -46,7 +46,6 @@ export default function ProfileScreen() {
     <>
       <Stack.Screen
         options={{
-          title: '프로필 수정',
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8 }}>
               <Ionicons name="close" size={24} color="#333" />
@@ -64,8 +63,8 @@ export default function ProfileScreen() {
               <Text style={styles.label}>이름</Text>
               <TextInput
                 style={styles.input}
-                value={name}
-                onChangeText={setName}
+                value={nickname}
+                onChangeText={setNickname}
                 placeholder="이름을 입력하세요"
                 placeholderTextColor="#999"
                 autoCapitalize="none"

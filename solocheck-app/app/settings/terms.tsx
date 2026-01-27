@@ -1,12 +1,9 @@
 import { ScrollView, Text, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
 
 export default function TermsScreen() {
   return (
-    <>
-      <Stack.Screen options={{ title: '이용약관' }} />
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -149,8 +146,7 @@ export default function TermsScreen() {
             </Text>
           </View>
         </ScrollView>
-      </SafeAreaView>
-    </>
+    </SafeAreaView>
   );
 }
 
