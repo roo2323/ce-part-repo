@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
 import { useAuthStore } from '@/stores/auth.store';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -105,18 +106,10 @@ export default function SettingsScreen() {
         {
           id: 'checkin-interval',
           title: '체크인 주기',
-          subtitle: '현재: 24시간',
+          subtitle: '12시간, 1일, 3일, 7일 중 선택',
           icon: 'time-outline',
           type: 'link',
-          onPress: () => Alert.alert('알림', '체크인 주기 설정은 준비 중입니다.'),
-        },
-        {
-          id: 'grace-period',
-          title: '유예 기간',
-          subtitle: '현재: 12시간',
-          icon: 'hourglass-outline',
-          type: 'link',
-          onPress: () => Alert.alert('알림', '유예 기간 설정은 준비 중입니다.'),
+          onPress: () => router.push('/settings/checkin'),
         },
       ],
     },
@@ -149,14 +142,14 @@ export default function SettingsScreen() {
           title: '프로필 수정',
           icon: 'person-outline',
           type: 'link',
-          onPress: () => Alert.alert('알림', '프로필 수정은 준비 중입니다.'),
+          onPress: () => router.push('/settings/profile'),
         },
         {
           id: 'password',
           title: '비밀번호 변경',
-          icon: 'lock-closed-outline',
+          icon: 'key-outline',
           type: 'link',
-          onPress: () => Alert.alert('알림', '비밀번호 변경은 준비 중입니다.'),
+          onPress: () => router.push('/settings/password'),
         },
         {
           id: 'logout',
@@ -175,19 +168,19 @@ export default function SettingsScreen() {
           title: '이용약관',
           icon: 'document-text-outline',
           type: 'link',
-          onPress: () => Alert.alert('알림', '이용약관 페이지는 준비 중입니다.'),
+          onPress: () => router.push('/settings/terms'),
         },
         {
           id: 'privacy',
           title: '개인정보 처리방침',
           icon: 'shield-checkmark-outline',
           type: 'link',
-          onPress: () => Alert.alert('알림', '개인정보 처리방침 페이지는 준비 중입니다.'),
+          onPress: () => router.push('/settings/privacy'),
         },
         {
           id: 'version',
           title: '앱 버전',
-          subtitle: '1.0.0',
+          subtitle: Constants.expoConfig?.version || '1.0.0',
           icon: 'information-circle-outline',
           type: 'link',
         },

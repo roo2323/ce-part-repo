@@ -142,3 +142,27 @@ class UserResponse(BaseModel):
         ...,
         description="Whether the user account is active",
     )
+
+
+class ChangePasswordRequest(BaseModel):
+    """Schema for password change request."""
+
+    current_password: str = Field(
+        ...,
+        description="Current password",
+    )
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="New password (minimum 8 characters)",
+    )
+
+
+class ChangePasswordResponse(BaseModel):
+    """Schema for password change response."""
+
+    message: str = Field(
+        default="비밀번호가 변경되었습니다.",
+        description="Response message",
+    )

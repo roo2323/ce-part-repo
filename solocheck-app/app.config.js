@@ -1,11 +1,11 @@
 export default {
   expo: {
-    name: 'SoloCheck',
-    slug: 'solocheck',
+    name: '하루안부',
+    slug: 'dailyhello',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
-    scheme: 'solocheck',
+    scheme: 'dailyhello',
     userInterfaceStyle: 'automatic',
     splash: {
       image: './assets/splash.png',
@@ -15,14 +15,14 @@ export default {
     assetBundlePatterns: ['**/*'],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.solocheck.app',
+      bundleIdentifier: 'com.dailyhello.app',
     },
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
-      package: 'com.solocheck.app',
+      package: 'com.dailyhello.app',
     },
     web: {
       bundler: 'metro',

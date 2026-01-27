@@ -61,8 +61,8 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>SoloCheck</Text>
-        <Text style={styles.subtitle}>안전한 일상을 위한 체크인</Text>
+        <Text style={styles.title}>하루안부</Text>
+        <Text style={styles.subtitle}>혼자여도 괜찮아, 매일 안부를 전해요</Text>
       </View>
 
       <View style={styles.form}>

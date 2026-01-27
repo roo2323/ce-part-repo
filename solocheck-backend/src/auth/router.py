@@ -11,6 +11,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from src.auth.schemas import (
+    ChangePasswordRequest,
+    ChangePasswordResponse,
     ForgotPasswordRequest,
     ForgotPasswordResponse,
     LoginRequest,
@@ -21,6 +23,7 @@ from src.auth.schemas import (
     UserResponse,
 )
 from src.auth.service import (
+    change_password,
     create_tokens,
     get_user_by_email,
     login,
@@ -228,3 +231,32 @@ def get_me(
         nickname=current_user.nickname,
         is_active=current_user.is_active,
     )
+
+
+@router.post(
+    "/change-password",
+    response_model=ChangePasswordResponse,
+    summary="Change password",
+    description="Change the authenticated user's password.",
+)
+def change_user_password(
+    data: ChangePasswordRequest,
+    current_user: CurrentActiveUser,
+    db: Annotated[Session, Depends(get_db)],
+) -> ChangePasswordResponse:
+    """
+    Change user's password.
+
+    Args:
+        data: Change password request with current and new password.
+        current_user: The authenticated user.
+        db: Database session.
+
+    Returns:
+        ChangePasswordResponse with success message.
+
+    Raises:
+        InvalidCredentialsException: If current password is incorrect.
+    """
+    change_password(db, current_user, data.current_password, data.new_password)
+    return ChangePasswordResponse()

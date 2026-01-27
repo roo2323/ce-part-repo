@@ -37,7 +37,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
-          headerTitle: 'SoloCheck',
+          headerTitle: '하루안부',
         }}
       />
       <Tabs.Screen

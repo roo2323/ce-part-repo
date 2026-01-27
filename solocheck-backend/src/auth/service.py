@@ -190,3 +190,28 @@ def send_password_reset_email(email: str) -> None:
     # TODO: Implement actual email sending via SendGrid
     # For now, just log the request
     pass
+
+
+def change_password(
+    db: Session,
+    user: User,
+    current_password: str,
+    new_password: str,
+) -> None:
+    """
+    Change user's password.
+
+    Args:
+        db: Database session.
+        user: The user changing their password.
+        current_password: Current password for verification.
+        new_password: New password to set.
+
+    Raises:
+        InvalidCredentialsException: If current password is incorrect.
+    """
+    if not verify_password(current_password, user.password_hash):
+        raise InvalidCredentialsException("현재 비밀번호가 올바르지 않습니다.")
+
+    user.password_hash = get_password_hash(new_password)
+    db.commit()

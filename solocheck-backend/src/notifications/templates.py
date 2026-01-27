@@ -1,5 +1,5 @@
 """
-Notification templates for SoloCheck.
+Notification templates for 하루안부.
 
 This module provides email and push notification templates with
 required legal disclaimers as specified in CLAUDE.md.
@@ -44,9 +44,9 @@ def get_status_alert_email(
     Returns:
         dict: Contains 'subject' and 'html' keys.
     """
-    user_display = nickname or "SoloCheck 사용자"
+    user_display = nickname or "하루안부 사용자"
 
-    subject = f"[SoloCheck] {user_display}님의 연락 두절 알림"
+    subject = f"[하루안부] {user_display}님의 연락 두절 알림"
 
     html = f"""
 <!DOCTYPE html>
@@ -54,12 +54,12 @@ def get_status_alert_email(
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoloCheck 알림</title>
+    <title>하루안부 알림</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #f5f5f5;">
     <div style="background-color: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">SoloCheck</h1>
+            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">하루안부</h1>
         </div>
 
         <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
@@ -105,9 +105,9 @@ def get_personal_message_email(
     Returns:
         dict: Contains 'subject' and 'html' keys.
     """
-    user_display = nickname or "SoloCheck 사용자"
+    user_display = nickname or "하루안부 사용자"
 
-    subject = f"[SoloCheck] {user_display}님이 남긴 메시지입니다"
+    subject = f"[하루안부] {user_display}님이 남긴 메시지입니다"
 
     html = f"""
 <!DOCTYPE html>
@@ -115,12 +115,12 @@ def get_personal_message_email(
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoloCheck 개인 메시지</title>
+    <title>하루안부 개인 메시지</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #f5f5f5;">
     <div style="background-color: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">SoloCheck</h1>
+            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">하루안부</h1>
         </div>
 
         <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
@@ -204,9 +204,9 @@ def get_contact_registration_email(
     Returns:
         dict: Contains 'subject' and 'html' keys.
     """
-    user_display = user_nickname or "SoloCheck 사용자"
+    user_display = user_nickname or "하루안부 사용자"
 
-    subject = f"[SoloCheck] {user_display}님이 비상연락처로 등록했습니다"
+    subject = f"[하루안부] {user_display}님이 비상연락처로 등록했습니다"
 
     # Required disclaimer from CLAUDE.md Section 7.2
     html = f"""
@@ -215,12 +215,12 @@ def get_contact_registration_email(
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoloCheck 알림</title>
+    <title>하루안부 알림</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #f5f5f5;">
     <div style="background-color: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">SoloCheck</h1>
+            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">하루안부</h1>
         </div>
 
         <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 16px;">

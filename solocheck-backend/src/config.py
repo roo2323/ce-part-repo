@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = "SoloCheck"
+    app_name: str = "하루안부"
     app_env: str = "development"
     debug: bool = True
 
@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # SendGrid Email
     sendgrid_api_key: Optional[str] = None
-    sendgrid_from_email: str = "noreply@solocheck.app"
+    sendgrid_from_email: str = "noreply@dailyhello.app"
 
     # Message Encryption
     message_encryption_key: str = ""
